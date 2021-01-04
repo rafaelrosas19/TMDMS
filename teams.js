@@ -2,6 +2,7 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const { result, update } = require("lodash");
 const cTable = require('console.table');
+const RawListPrompt = require("inquirer/lib/prompts/rawlist");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -29,7 +30,7 @@ function runSearch() {
                 "Search for a specific employee",
                 "Add employee",
                 "Remove employee",
-                "Update employee info",
+                "Update employee role ID or salary",
                 "View all departments",
                 "Add department",
                 "Remove department",
@@ -162,9 +163,9 @@ function empMng2() {
                     },
                     message: "Which manager?",
                     validate: function (email) {
-  
+
                         valid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
-            
+
                         if (valid) {
                             return true;
                         } else {
@@ -262,7 +263,7 @@ function addEmp() {
                     choices: [
                         11111
                     ]
-                    
+
                     // function () {
                     //     var choiceArray = [];
                     //     // var obj = {};
@@ -314,47 +315,115 @@ function removeEmp() {
                     name: "emp_id",
                     type: "input",
                     message: "What is the employee ID of the employee you want to remove?",
-                    validate: function (emp_id) {
+                    // validate: function (emp_id) {
 
-                        console.log(results);
-  
-                        for(var i = 0; i < results.length; i++) {
-                            if (results[i].emp_id === emp_id) {
-                                return true;
-                            } else {
-                                console.log(". Please enter a valid employee ID")
-                                return false;
-                            }
-                            
-                        };
-                    },
+                    //     console.log(results);
+
+                    //     for(var i = 0; i < results.length; i++) {
+                    //         if (results[i].emp_id === emp_id) {
+                    //             return true;
+                    //         } else {
+                    //             console.log(". Please enter a valid employee ID")
+                    //             return false;
+                    //         }
+
+                    //     };
+                    // },
                 }
             ])
             .then(function (answer) {
-
-                // console.log(answer.emp_id);
-                // console.log(results.length);
-
-                // for (var i = 0; i < results.length; i++) {
-                //     if (results[i].emp_id === answer.emp_id) {
-
-                //         var employee = results[i].emp_id;
-                //     }
-                // };
-
-                console.log(employee);
-
-
-
-
+                connection.query("DELETE FROM employees WHERE ?",
+                    {
+                        emp_id: answer.emp_id
+                    },
+                    function (err, res) {
+                        if (err) throw err;
+                        console.log("Your employee was removed successfully!");
+                        runSearch();
+                    }
+                );
             });
     });
 
 };
 
-// NEED TO CREATE A WAY FOR THE FUNCTION TO RETURN AN ERROR IF THE EMPLOYEE IS NOT FOUND IN DATABSE 
+// WORKS
 function updateEmp() {
-
+    connection.query("SELECT * FROM employees", function (err, results) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: "emp_id",
+                    type: "input",
+                    message: "What is the employee ID of the employee you want to update?",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].emp_id)
+                        }
+                        return choiceArray;
+                    }
+                },
+                {
+                    name: "choice",
+                    type: "rawlist",
+                    choices:
+                        [
+                            "Update employee role",
+                            "Update employee salary"
+                        ]
+                }
+            ])
+            .then(function (answer) {
+                if (answer.choice === "Update employee role") {
+                    inquirer
+                        .prompt([
+                            {
+                                name: "role_id",
+                                type: "input",
+                                message: "What is the new role ID of the employee?"
+                            }
+                        ])
+                        .then(function (answer2) {
+                            connection.query("UPDATE employees SET ? WHERE ?",
+                                [
+                                    { role_id: answer2.role_id },
+                                    { emp_id: answer.emp_id }
+                                ],
+                                function (err, res) {
+                                    if (err) throw err;
+                                    console.log("Your employee's role was updated successfully!")
+                                    runSearch();
+                                }
+                            )
+                        })
+                }
+                else if (answer.choice === "Update employee salary") {
+                    inquirer
+                        .prompt([
+                            {
+                                name: "salary",
+                                type: "input",
+                                message: "What is the new salary of the employee?"
+                            }
+                        ])
+                        .then(function (answer2) {
+                            connection.query("UPDATE employees SET ? WHERE ?",
+                                [
+                                    { salary: answer2.salary },
+                                    { emp_id: answer.emp_id }
+                                ],
+                                function (err, res) {
+                                    if (err) throw err;
+                                    console.log("Your employee's salary was updated successfully!")
+                                    runSearch();
+                                }
+                            )
+                        });
+                }
+            });
+    });
 };
 
 // WORKS
