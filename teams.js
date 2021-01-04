@@ -46,7 +46,7 @@ function runSearch() {
                     break;
 
                 case "View all employees by manager":
-                    empMng();
+                    empMng2();
                     break;
 
                 case "View all employees by department":
@@ -149,22 +149,29 @@ function empMng2() {
         inquirer
             .prompt([
                 {
-                    name: "choice",
+                    name: "first_name",
                     type: "rawlist",
                     choices: function () {
                         var choiceArray = [];
                         // var obj = {};
                         for (var i = 0; i < results.length; i++) {
-                            // obj = {first_name:results[i].first_name,
-                            //        last_name:results[i].last_name,
-                            //        emp_id:results[i].emp_id
-                            // }
-                            choiceArray.push({ first_name: results[i].first_name, emp_id: results[i].emp_id });
+                            choiceArray.push(results[i].first_name + " " + results[i].last_name + " " + results[i].emp_id);
                         }
                         console.log(choiceArray);
                         return choiceArray;
                     },
-                    message: "Which manager?"
+                    message: "Which manager?",
+                    validate: function (email) {
+  
+                        valid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+            
+                        if (valid) {
+                            return true;
+                        } else {
+                            console.log(".  Please enter a valid email")
+                            return false;
+                        }
+                    },
                 }
             ])
 
@@ -221,11 +228,7 @@ function empSearch() {
         .then(function (answer) {
             connection.query("SELECT * FROM employees WHERE ?", { first_name: answer.employee }, function (err, res) {
                 if (err) throw err;
-                console.log(
-                    "Name: " + res[0].first_name + " " + res[0].last_name + " || " +
-                    "Employee ID: " + res[0].emp_id + " || " +
-                    "Salary: " + res[0].salary
-                );
+                console.table(res);
             });
         });
 };
@@ -256,19 +259,23 @@ function addEmp() {
                     name: "role_id",
                     type: "list",
                     message: "What will their role be?",
-                    choices: function () {
-                        var choiceArray = [];
-                        // var obj = {};
-                        for (var i = 0; i < results.length; i++) {
-                            // obj = {first_name:results[i].first_name,
-                            //        last_name:results[i].last_name,
-                            //        emp_id:results[i].emp_id
-                            // }
-                            choiceArray.push({ first_name: results[i].first_name, emp_id: results[i].emp_id });
-                        }
-                        console.log(choiceArray);
-                        return choiceArray;
-                    },
+                    choices: [
+                        11111
+                    ]
+                    
+                    // function () {
+                    //     var choiceArray = [];
+                    //     // var obj = {};
+                    //     for (var i = 0; i < results.length; i++) {
+                    //         // obj = {first_name:results[i].first_name,
+                    //         //        last_name:results[i].last_name,
+                    //         //        emp_id:results[i].emp_id
+                    //         // }
+                    //         choiceArray.push({ first_name: results[i].first_name, emp_id: results[i].emp_id });
+                    //     }
+                    //     console.log(choiceArray);
+                    //     return choiceArray;
+                    // },
                 },
                 {
                     name: "salary",
@@ -307,6 +314,20 @@ function removeEmp() {
                     name: "emp_id",
                     type: "input",
                     message: "What is the employee ID of the employee you want to remove?",
+                    validate: function (emp_id) {
+
+                        console.log(results);
+  
+                        for(var i = 0; i < results.length; i++) {
+                            if (results[i].emp_id === emp_id) {
+                                return true;
+                            } else {
+                                console.log(". Please enter a valid employee ID")
+                                return false;
+                            }
+                            
+                        };
+                    },
                 }
             ])
             .then(function (answer) {
@@ -314,12 +335,12 @@ function removeEmp() {
                 // console.log(answer.emp_id);
                 // console.log(results.length);
 
-                for (var i = 0; i < results.length; i++) {
-                    if (results[i].emp_id === answer.emp_id) {
+                // for (var i = 0; i < results.length; i++) {
+                //     if (results[i].emp_id === answer.emp_id) {
 
-                        var employee = results[i].emp_id;
-                    }
-                };
+                //         var employee = results[i].emp_id;
+                //     }
+                // };
 
                 console.log(employee);
 
@@ -522,5 +543,4 @@ function operatingExp() {
 
             });
     });
-
 };
