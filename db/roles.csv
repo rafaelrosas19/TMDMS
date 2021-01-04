@@ -1,0 +1,15 @@
+role_id,title,dept_id
+2010,Executive Chef,2
+2011,Sous Chef,2
+2012,Chef de Cuisine,2
+2013,Chef de Partie,2
+2014,Commis Chef,2
+2015,Porter,2
+2016,Dishwasher,2
+2050,Server,1
+2051,Bartender,1
+2052,Host,1
+2053,Busser,1
+2054,Barback,1
+2055,Sommelier,1
+2056,Food Runner,1

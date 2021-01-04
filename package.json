@@ -1,0 +1,24 @@
+{
+  "name": "tmdms",
+  "version": "1.0.0",
+  "description": "Employee Database Management System",
+  "main": "teams.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafaelrosas19/TMDMS.git"
+  },
+  "author": "Rafael Rosas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rafaelrosas19/TMDMS/issues"
+  },
+  "homepage": "https://github.com/rafaelrosas19/TMDMS#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^7.3.3",
+    "mysql": "^2.18.1"
+  }
+}
