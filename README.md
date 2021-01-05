@@ -10,9 +10,9 @@ To install this respository you will need Node, Inquirer, and MySQL installed on
 
 https://rafaelrosas19.github.io/
 
-![](/assets/startup.png)
-![](/assets/expenses.png)
-![](/assets/employees.png)
+![](/assets/startup.png =10x)
+![](/assets/expenses.png =10x)
+![](/assets/employees.png =10x)
 
 
 ## Usage
