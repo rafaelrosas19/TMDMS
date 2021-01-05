@@ -1,8 +1,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const { result, update } = require("lodash");
-const RawListPrompt = require("inquirer/lib/prompts/rawlist");
 const { printTable } = require('console-table-printer');
+const figlet = require('figlet');
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -10,6 +9,15 @@ var connection = mysql.createConnection({
     user: "root",
     password: "",
     database: "teams_db"
+});
+
+figlet('TMDMS', function(err, data) {
+    if (err) {
+        console.log('Something went wrong...');
+        console.dir(err);
+        return;
+    }
+    console.log(data)
 });
 
 connection.connect(function (err) {
@@ -138,7 +146,6 @@ function empMng() {
 
             .then(function (answer) {
                 const manager = results.find(person => person.first_name + " " + person.last_name === answer.choice)
-                console.log(manager.dept_id);
                 connection.query("SELECT e.first_name, e.last_name, r.dept_id FROM employees e JOIN roles r  ON e.role_id = r.role_id WHERE ?;",
                     { dept_id: manager.dept_id },
                     function (err, res) {
@@ -173,7 +180,6 @@ function empDep() {
 
             .then(function (answer) {
                 const department = results.find(dept => dept.dept_name === answer.choice);
-                console.log(department);
                 connection.query("SELECT e.first_name, e.last_name, r.dept_id FROM employees e JOIN roles r  ON e.role_id = r.role_id WHERE ?",
                     { dept_id: department.dept_id },
                     function (err, res) {
@@ -182,9 +188,7 @@ function empDep() {
                         runSearch();
                     }
                 )
-            }
-
-            )
+            })
     })
 };
 
@@ -205,7 +209,7 @@ function empSearch() {
         });
 };
 
-// NEED TO HAVE A WAY TO SET OBJECT DATA INSIDE OF AN ARRAY
+// WORKS
 function addEmp() {
     connection.query("SELECT * FROM roles", function (err, results) {
         if (err) throw err;
@@ -229,7 +233,7 @@ function addEmp() {
                 },
                 {
                     name: "role_id",
-                    type: "list",
+                    type: "input",
                     message: "What will their role_id be?",
                 },
                 {
