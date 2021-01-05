@@ -1,8 +1,8 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const { result, update } = require("lodash");
-const cTable = require('console.table');
 const RawListPrompt = require("inquirer/lib/prompts/rawlist");
+const { printTable } = require('console-table-printer');
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -37,7 +37,8 @@ function runSearch() {
                 "View all roles",
                 "Add role",
                 "Remove role",
-                "View operating expenses"
+                "View operating expenses",
+                "EXIT"
             ]
         })
         .then(function (answer) {
@@ -47,7 +48,7 @@ function runSearch() {
                     break;
 
                 case "View all employees by manager":
-                    empMng2();
+                    empMng();
                     break;
 
                 case "View all employees by department":
@@ -66,7 +67,7 @@ function runSearch() {
                     removeEmp();
                     break;
 
-                case "Update employee info":
+                case "Update employee role ID or salary":
                     updateEmp();
                     break;
 
@@ -97,6 +98,10 @@ function runSearch() {
                 case "View operating expenses":
                     operatingExp();
                     break;
+
+                case "Exit":
+                    connection.end();
+                    break;
             }
         });
 }
@@ -104,15 +109,15 @@ function runSearch() {
 function empAll() {
     connection.query("SELECT * FROM employees", function (err, res) {
         if (err) throw err;
-        console.table(res);
+        printTable(res);
         runSearch();
     })
 
 };
 
-// NEED TO HAVE A WAY TO SET OBJECT DATA INSIDE OF AN ARRAY AND USE IT IN THE CONNECTION QUERY
-function empMng1() {
-    connection.query("SELECT e.first_name, e.last_name, e.emp_id FROM employees e JOIN dept_managers dm ON e.emp_id = dm.emp_id;", function (err, results) {
+// WORKS
+function empMng() {
+    connection.query("SELECT e.first_name, e.last_name, e.emp_id, dm.dept_id FROM employees e JOIN dept_managers dm ON e.emp_id = dm.emp_id;", function (err, results) {
         if (err) throw err;
         inquirer
             .prompt([
@@ -121,72 +126,34 @@ function empMng1() {
                     type: "rawlist",
                     choices: function () {
                         var choiceArray = [];
-                        // var obj = {};
                         for (var i = 0; i < results.length; i++) {
-                            // obj = {first_name:results[i].first_name,
-                            //        last_name:results[i].last_name,
-                            //        emp_id:results[i].emp_id
-                            // }
-                            choiceArray.push({ first_name: results[i].first_name, emp_id: results[i].emp_id });
+                            choiceArray.push(results[i].first_name + " " + results[i].last_name);
                         }
-                        console.log(choiceArray);
                         return choiceArray;
                     },
+
                     message: "Which manager?"
                 }
             ])
 
             .then(function (answer) {
-                console.log(answer);
+                const manager = results.find(person => person.first_name + " " + person.last_name === answer.choice)
+                console.log(manager.dept_id);
+                connection.query("SELECT e.first_name, e.last_name, r.dept_id FROM employees e JOIN roles r  ON e.role_id = r.role_id WHERE ?;",
+                    { dept_id: manager.dept_id },
+                    function (err, res) {
+                        if (err) throw err;
+                        printTable(res);
+                        runSearch();
+                    }
+                )
             })
-    }
-
-    )
+    })
 };
 
-function empMng2() {
-    connection.query("SELECT e.first_name, e.last_name, e.emp_id FROM employees e JOIN dept_managers dm ON e.emp_id = dm.emp_id;", function (err, results) {
-        if (err) throw err;
-        inquirer
-            .prompt([
-                {
-                    name: "first_name",
-                    type: "rawlist",
-                    choices: function () {
-                        var choiceArray = [];
-                        // var obj = {};
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i].first_name + " " + results[i].last_name + " " + results[i].emp_id);
-                        }
-                        console.log(choiceArray);
-                        return choiceArray;
-                    },
-                    message: "Which manager?",
-                    validate: function (email) {
-
-                        valid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
-
-                        if (valid) {
-                            return true;
-                        } else {
-                            console.log(".  Please enter a valid email")
-                            return false;
-                        }
-                    },
-                }
-            ])
-
-            .then(function (answer) {
-                console.log(answer);
-            })
-    }
-
-    )
-};
-
-// SAME ISSUE AS empMng
+// WORKS
 function empDep() {
-    connection.query("SELECT e.first_name, e.last_name, e.emp_id FROM employees e JOIN dept_managers dm ON e.emp_id = dm.emp_id;", function (err, results) {
+    connection.query("SELECT * FROM departments", function (err, results) {
         if (err) throw err;
         inquirer
             .prompt([
@@ -195,30 +162,33 @@ function empDep() {
                     type: "rawlist",
                     choices: function () {
                         var choiceArray = [];
-                        // var obj = {};
                         for (var i = 0; i < results.length; i++) {
-                            // obj = {first_name:results[i].first_name,
-                            //        last_name:results[i].last_name,
-                            //        emp_id:results[i].emp_id
-                            // }
-                            choiceArray.push({ first_name: results[i].first_name, emp_id: results[i].emp_id });
+                            choiceArray.push(results[i].dept_name);
                         }
-                        console.log(choiceArray);
                         return choiceArray;
                     },
-                    message: "Which manager?"
+                    message: "Which department?"
                 }
             ])
 
             .then(function (answer) {
-                console.log(answer);
-            })
-    }
+                const department = results.find(dept => dept.dept_name === answer.choice);
+                console.log(department);
+                connection.query("SELECT e.first_name, e.last_name, r.dept_id FROM employees e JOIN roles r  ON e.role_id = r.role_id WHERE ?",
+                    { dept_id: department.dept_id },
+                    function (err, res) {
+                        if (err) throw err;
+                        printTable(res);
+                        runSearch();
+                    }
+                )
+            }
 
-    )
+            )
+    })
 };
 
-// NEED TO CREATE A WAY FOR THE FUNCTION TO RETURN AN ERROR IF THE EMPLOYEE IS NOT FOUND IN DATABSE 
+// WORKS
 function empSearch() {
     inquirer
         .prompt({
@@ -229,7 +199,8 @@ function empSearch() {
         .then(function (answer) {
             connection.query("SELECT * FROM employees WHERE ?", { first_name: answer.employee }, function (err, res) {
                 if (err) throw err;
-                console.table(res);
+                printTable(res);
+                runSearch();
             });
         });
 };
@@ -259,24 +230,7 @@ function addEmp() {
                 {
                     name: "role_id",
                     type: "list",
-                    message: "What will their role be?",
-                    choices: [
-                        11111
-                    ]
-
-                    // function () {
-                    //     var choiceArray = [];
-                    //     // var obj = {};
-                    //     for (var i = 0; i < results.length; i++) {
-                    //         // obj = {first_name:results[i].first_name,
-                    //         //        last_name:results[i].last_name,
-                    //         //        emp_id:results[i].emp_id
-                    //         // }
-                    //         choiceArray.push({ first_name: results[i].first_name, emp_id: results[i].emp_id });
-                    //     }
-                    //     console.log(choiceArray);
-                    //     return choiceArray;
-                    // },
+                    message: "What will their role_id be?",
                 },
                 {
                     name: "salary",
@@ -305,7 +259,7 @@ function addEmp() {
 
 };
 
-// NEED TO CREATE A WAY FOR THE FUNCTION TO RETURN AN ERROR IF THE EMPLOYEE IS NOT FOUND IN DATABSE 
+// WORKS
 function removeEmp() {
     connection.query("SELECT * FROM employees", function (err, results) {
         if (err) throw err;
@@ -315,20 +269,6 @@ function removeEmp() {
                     name: "emp_id",
                     type: "input",
                     message: "What is the employee ID of the employee you want to remove?",
-                    // validate: function (emp_id) {
-
-                    //     console.log(results);
-
-                    //     for(var i = 0; i < results.length; i++) {
-                    //         if (results[i].emp_id === emp_id) {
-                    //             return true;
-                    //         } else {
-                    //             console.log(". Please enter a valid employee ID")
-                    //             return false;
-                    //         }
-
-                    //     };
-                    // },
                 }
             ])
             .then(function (answer) {
@@ -355,7 +295,7 @@ function updateEmp() {
             .prompt([
                 {
                     name: "emp_id",
-                    type: "input",
+                    type: "rawlist",
                     message: "What is the employee ID of the employee you want to update?",
                     choices: function () {
                         var choiceArray = [];
@@ -368,11 +308,11 @@ function updateEmp() {
                 {
                     name: "choice",
                     type: "rawlist",
-                    choices:
-                        [
-                            "Update employee role",
-                            "Update employee salary"
-                        ]
+                    message: "What would you like to update?",
+                    choices: [
+                        "Update employee role",
+                        "Update employee salary",
+                    ]
                 }
             ])
             .then(function (answer) {
@@ -430,7 +370,7 @@ function updateEmp() {
 function viewDep() {
     connection.query("SELECT * FROM departments", function (err, res) {
         if (err) throw err;
-        console.table(res);
+        printTable(res);
         runSearch();
     })
 };
@@ -501,7 +441,7 @@ function removeDep() {
 function viewRoles() {
     connection.query("SELECT * FROM roles", function (err, res) {
         if (err) throw err;
-        console.table(res);
+        printTable(res);
         runSearch();
     })
 
@@ -604,7 +544,7 @@ function operatingExp() {
                     ],
                     function (err, res) {
                         if (err) throw err;
-                        console.table(res);
+                        printTable(res);
                         runSearch();
                     }
 
