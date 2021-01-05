@@ -2,7 +2,23 @@
 
 ## Description
 
-This is a Node CLI application that uses the Inquirer and MySql packages to create a team member database management system. This application allows you to update ids, salaries, roles, and departments for all team members. Furthermore, it allows you to see the total expenditure per department in the business. 
+This is a Node CLI application that uses the Inquirer and MySql packages to create a team member database management system. This application allows you to update ids, salaries, roles, and departments for all team members. Furthermore, it allows you to see the total expenditure per department in the business. The following prompts are available:    
+
+                "View all employees",
+                "View all employees by manager",
+                "View all employees by department",
+                "Search for a specific employee",
+                "Add employee",
+                "Remove employee",
+                "Update employee role ID or salary",
+                "View all departments",
+                "Add department",
+                "Remove department",
+                "View all roles",
+                "Add role",
+                "Remove role",
+                "View operating expenses",
+                "EXIT"
 
 ## Installation
 
