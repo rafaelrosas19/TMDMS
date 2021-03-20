@@ -24,7 +24,6 @@ This is a Node CLI application that uses the Inquirer and MySql packages to crea
 
 To install this respository you will need Node, Inquirer, and MySQL installed on your local machine using npm install. 
 
-https://rafaelrosas19.github.io/
 
 ![](/assets/startup.png)
 ![](/assets/employees.png)
