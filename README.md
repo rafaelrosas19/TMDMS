@@ -20,6 +20,8 @@ This is a Node CLI application that uses the Inquirer and MySql packages to crea
                 "View operating expenses",
                 "EXIT"
 
+This application runs on your machine using Visual Studio Code.
+
 ## Installation
 
 To install this respository you will need Node, Inquirer, and MySQL installed on your local machine using npm install. 
